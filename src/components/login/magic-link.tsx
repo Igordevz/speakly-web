@@ -90,14 +90,14 @@ export default function MagicLinkLogin({ className }: MagicLinkLoginProps) {
             </p>
           </div>
 
-          <div className="text-center text-sm text-muted-foreground">
+          <div className="text-center text-sm text-muted-foreground py-2">
             Não recebeu o email? Verifique sua pasta de spam ou{" "}
-            <button onClick={handleBackToLogin} className="text-primary hover:underline font-medium">
+            <button onClick={handleBackToLogin} className="text-primary hover:underline font-medium mt-2 cursor-pointer">
               tente novamente
             </button>
           </div>
 
-          <Button variant="outline" onClick={handleBackToLogin} className="w-full bg-transparent">
+          <Button variant="outline" onClick={handleBackToLogin} className="w-full bg-transparent cursor-pointer">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar ao login
           </Button>
@@ -128,7 +128,7 @@ export default function MagicLinkLogin({ className }: MagicLinkLoginProps) {
             {error && <p className="text-sm text-destructive">{error}</p>}
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full cursor-pointer" disabled={isLoading}>
             {isLoading ? (
               <>
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
