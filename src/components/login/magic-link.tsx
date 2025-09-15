@@ -1,73 +1,53 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import { useContext } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Mail, ArrowLeft, CheckCircle } from "lucide-react"
+import { contextApi } from "@/context/auth"
+
+const MagicLinkSchema = z.object({
+  email: z.string().email({ message: "Por favor, insira um email válido." }),
+})
+
+type MagicLinkFormData = z.infer<typeof MagicLinkSchema>
 
 interface MagicLinkLoginProps {
   className?: string
 }
 
 export default function MagicLinkLogin({ className }: MagicLinkLoginProps) {
-  const [email, setEmail] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [isEmailSent, setIsEmailSent] = useState(false)
-  const [error, setError] = useState("")
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+    reset,
+  } = useForm<MagicLinkFormData>({
+    resolver: zodResolver(MagicLinkSchema),
+  })
 
-  const sendMagicLink = async (email: string) => {
-    // Aqui você implementaria a lógica real para enviar o magic link
-    console.log("Enviando magic link para:", email)
+  const { LoginToMagicLink, isLoading, isEmailSent, setIsEmailSent, email } = useContext(contextApi)
 
-    // Simula delay da API
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    // Exemplo de integração com uma API:
-    // const response = await fetch('/api/auth/magic-link', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ email })
-    // })
-    //
-    // if (!response.ok) {
-    //   throw new Error('Falha ao enviar magic link')
-    // }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!email) {
-      setError("Por favor, insira seu email")
-      return
-    }
-
-    if (!email.includes("@")) {
-      setError("Por favor, insira um email válido")
-      return
-    }
-
-    setIsLoading(true)
-    setError("")
-
+  const handleLogin = async (data: MagicLinkFormData) => {
     try {
-      await sendMagicLink(email)
-      setIsEmailSent(true)
-    } catch (err) {
-      setError("Erro ao enviar o link. Tente novamente.")
-    } finally {
-      setIsLoading(false)
+      await LoginToMagicLink(data.email)
+    } catch (error) {
+      setError("root.serverError", {
+        type: "manual",
+        message: "Ocorreu um erro ao enviar o email. Tente novamente.",
+      })
     }
   }
 
   const handleBackToLogin = () => {
     setIsEmailSent(false)
-    setEmail("")
-    setError("")
+    reset({ email: "" })
   }
 
   if (isEmailSent) {
@@ -113,19 +93,19 @@ export default function MagicLinkLogin({ className }: MagicLinkLoginProps) {
         <CardDescription>Digite seu email e enviaremos um link para fazer login</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(handleLogin)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
               placeholder="seu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              {...register("email")}
               disabled={isLoading}
-              className={error ? "border-destructive" : ""}
+              className={errors.email ? "border-destructive" : ""}
             />
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+            {errors.root?.serverError && <p className="text-sm text-destructive">{errors.root.serverError.message}</p>}
           </div>
 
           <Button type="submit" className="w-full cursor-pointer" disabled={isLoading}>
@@ -133,8 +113,8 @@ export default function MagicLinkLogin({ className }: MagicLinkLoginProps) {
               <>
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                 Enviando...
-              </>
-            ) : ( 
+              </>            
+            ) : (
               <>
                 <Mail className="mr-2 h-4 w-4" />
                 Enviar Magic Link
