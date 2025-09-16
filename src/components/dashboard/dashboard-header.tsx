@@ -2,8 +2,15 @@
 
 import { Button } from "@/components/ui/button"
 import { LogOut, User } from "lucide-react"
+import Cookies from "js-cookie"
 
 export default function DashboardHeader() {
+
+  function Logout(){
+    Cookies.remove("@jwt")
+    location.replace("/login");
+  }
+
   return (
     <header className="border-b bg-card">
       <div className="flex h-16 items-center justify-between px-6">
@@ -16,7 +23,7 @@ export default function DashboardHeader() {
             <User className="h-4 w-4 mr-2" />
             Perfil
           </Button>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={Logout}>
             <LogOut className="h-4 w-4 mr-2" />
             Sair
           </Button>
