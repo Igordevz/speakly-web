@@ -37,7 +37,7 @@ export default function MagicLinkLogin({ className }: MagicLinkLoginProps) {
   const handleLogin = async (data: MagicLinkFormData) => {
     try {
       await LoginToMagicLink(data.email)
-    } catch (error) {
+    } catch {
       setError("root.serverError", {
         type: "manual",
         message: "Ocorreu um erro ao enviar o email. Tente novamente.",

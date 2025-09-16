@@ -19,8 +19,6 @@ import {
   FileAudio,
   Play,
   Trash2,
-  Clock,
-  Loader2,
 } from "lucide-react";
 import { instance as api } from "@/lib/axios";
 import { contextApi } from "@/context/auth";
@@ -38,13 +36,12 @@ interface AudioFile {
 
 export default function AudioDashboard() {
   const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
-  const [processing, setProcessing] = useState<string | null>(null);
   const { user } = useContext(contextApi);
 
   // 🔹 Pega os áudios já existentes do usuário
   useEffect(() => {
     if (user?.Audio && Array.isArray(user.Audio)) {
-      const parsedFiles = user.Audio.map((file: any) => ({
+      const parsedFiles = user.Audio.map((file: { id: string; name: string; file_size: number; text_brute: string; resume: string; createdAt: string | number | Date; }) => ({
         id: file.id,
         name: file.name ?? "sem_nome",
         size: file.file_size ?? 0,
@@ -152,21 +149,6 @@ export default function AudioDashboard() {
 
   const removeFile = (id: string) => {
     setAudioFiles((prev) => prev.filter((f) => f.id !== id));
-  };
-
-  const handleProcess = async (id: string) => {
-    setProcessing(id);
-    try {
-      await new Promise((res) => setTimeout(res, 2000)); // simulação
-
-      setAudioFiles((prev) =>
-        prev.map((f) => (f.id === id ? { ...f, transcribed: true } : f))
-      );
-    } catch (err) {
-      console.error("Erro ao processar:", err);
-    } finally {
-      setProcessing(null);
-    }
   };
 
   const formatFileSize = (bytes: number) => {

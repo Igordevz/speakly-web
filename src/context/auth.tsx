@@ -1,34 +1,25 @@
-"use client"
-
-import { instance } from "@/lib/axios"
-import React, { createContext, useState, ReactNode, useEffect } from "react"
-import Cookies from "js-cookie" 
+import { instance } from "@/lib/axios";
+import React, { createContext, useState, ReactNode, useEffect } from "react";
+import Cookies from "js-cookie";
 
 interface User {
   id: string;
-  email: string; 
-  Audio?: any[];
+  name: string;
+  email: string;
+  Audio: Record<string, unknown>[];
 }
 
 interface AuthContextProps {
-  isLoading: boolean
-  isEmailSent: boolean
-  LoginToMagicLink: (email: string) => Promise<void>
-  setIsEmailSent: (value: boolean) => void
-  email: string
-  user: User | null; 
-  fetchUser: () => Promise<void>; 
+  user: User | null;
+  isLoading: boolean;
+  isEmailSent: boolean;
+  email: string;
+  LoginToMagicLink: (email: string) => Promise<void>;
+  setIsEmailSent: (value: boolean) => void;
+  fetchUser: () => Promise<void>;
 }
 
-export const contextApi = createContext<AuthContextProps>({
-  isLoading: false,
-  isEmailSent: false,
-  LoginToMagicLink: async () => {},
-  setIsEmailSent: () => {},
-  email: "",
-  user: null, 
-  fetchUser: async () => {}, 
-})
+export const contextApi = createContext<AuthContextProps>({} as AuthContextProps);
 
 type IChildren = {
   children: ReactNode

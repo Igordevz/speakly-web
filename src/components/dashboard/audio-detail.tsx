@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ArrowLeft, FileAudio, Download, Copy, CheckCircle, Send, Bot, User, Clock, Sparkles } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { instance } from "@/lib/axios";
+import { toast } from "react-hot-toast";
 
 interface ChatMessage {
   id: string
@@ -46,12 +48,27 @@ export default function AudioDetail({ audioId }: AudioDetailProps) {
   const [audioData, setAudioData] = useState<AudioData | null>(null)
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState<"transcription" | "summary" | null>(null)
+  const [isProcessing, setIsProcessing] = useState(false)
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
   const [chatInput, setChatInput] = useState("")
   const [isAiTyping, setIsAiTyping] = useState(false)
 
   const [currentLoadingMessage, setCurrentLoadingMessage] = useState(0)
+
+  async function handleProcessAudio() {
+    try {
+      setIsProcessing(true)
+
+      await instance.put(`/audio/process-uploaded/${audioId}`)
+
+      toast.success("Audio processed successfully!")
+    } catch {
+      toast.error("Error processing audio.")
+    } finally {
+      setIsProcessing(false)
+    }
+  }
 
   useEffect(() => {
     if (loading) {
@@ -136,7 +153,7 @@ Pontos de atenção: Revisões intermediárias nos dias 20 e 25 para garantir qu
     }, 2000)
   }
 
-  const generateAiResponse = (question: string, audio: AudioData): string => {
+  const generateAiResponse = (question: string): string => {
     const lowerQuestion = question.toLowerCase()
 
     if (lowerQuestion.includes("igor")) {
@@ -331,7 +348,7 @@ Pontos de atenção: Revisões intermediárias nos dias 20 e 25 para garantir qu
                           <Bot className="h-8 w-8 text-primary" />
                         </div>
                         <p className="text-lg font-medium mb-2">Faça uma pergunta sobre o áudio</p>
-                        <p className="text-sm">Ex: "No áudio fala algo sobre Igor?"</p>
+                        <p className="text-sm">Ex: &quot;No áudio fala algo sobre Igor?&quot;</p>
                       </div>
                     ) : (
                       <div className="space-y-6">
@@ -390,7 +407,7 @@ Pontos de atenção: Revisões intermediárias nos dias 20 e 25 para garantir qu
                   </ScrollArea>
                   <div className="flex space-x-3">
                     <Input
-                      placeholder="Ex: No áudio fala algo sobre Igor?"
+                      placeholder='Ex: No áudio fala algo sobre Igor?'
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
                       onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
@@ -497,9 +514,14 @@ Pontos de atenção: Revisões intermediárias nos dias 20 e 25 para garantir qu
                   <Download className="h-4 w-4 mr-2" />
                   Baixar Transcrição
                 </Button>
-                <Button variant="outline" className="w-full justify-start bg-transparent">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start bg-transparent"
+                  onClick={handleProcessAudio}
+                  disabled={isProcessing}
+                >
                   <FileAudio className="h-4 w-4 mr-2" />
-                  Reprocessar Áudio
+                  {isProcessing ? 'Reprocessing...' : 'Reprocess Audio'}
                 </Button>
               </CardContent>
             </Card>

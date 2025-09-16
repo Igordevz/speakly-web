@@ -35,15 +35,16 @@ export default function TokenPage() {
         } else {
           setError("Token não foi retornado pela API.");
         }
-      } catch (err: any) {
-        setError(err?.response?.data?.message || "Ocorreu um erro ao validar o token.");
+      } catch (err: unknown) {
+        const error = err as { response?: { data?: { message?: string } } };
+        setError(error?.response?.data?.message || "Ocorreu um erro ao validar o token.");
       } finally {
         setIsLoading(false);
       }
     }
 
     validateToken();
-  }, [id]);
+  }, [id, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center ">
