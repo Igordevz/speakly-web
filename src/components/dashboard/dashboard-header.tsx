@@ -3,7 +3,8 @@
 import { Button } from "@/components/ui/button"
 import { LogOut, User } from "lucide-react"
 import Cookies from "js-cookie"
-
+import logo from "../../../public/speakly.png"
+import Image from "next/image"
 export default function DashboardHeader() {
 
   function Logout(){
@@ -12,18 +13,14 @@ export default function DashboardHeader() {
   }
 
   return (
-    <header className="border-b bg-card">
+    <header className="border-b ">
       <div className="flex h-16 items-center justify-between px-6">
         <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-semibold">Audio Dashboard</h1>
+          <Image src={logo} alt="d" className="w-10 rounded-sm"/>
         </div>
 
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="sm">
-            <User className="h-4 w-4 mr-2" />
-            Perfil
-          </Button>
-          <Button variant="ghost" size="sm" onClick={Logout}>
+        <div className="flex items-center space-x-4 ">
+          <Button variant="ghost" size="sm" onClick={Logout} className="cursor-pointer">
             <LogOut className="h-4 w-4 mr-2" />
             Sair
           </Button>

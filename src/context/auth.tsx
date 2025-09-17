@@ -1,6 +1,9 @@
+"use client";
+
 import { instance } from "@/lib/axios";
 import React, { createContext, useState, ReactNode, useEffect } from "react";
 import Cookies from "js-cookie";
+import { toast } from "sonner";
 
 interface User {
   id: string;
@@ -29,7 +32,7 @@ export default function AuthProvider({ children }: IChildren) {
   const [isLoading, setIsLoading] = useState(false)
   const [isEmailSent, setIsEmailSent] = useState(false)
   const [email, setEmail] = useState("")
-  const [user, setUser] = useState<User | null>(null); 
+  const [user, setUser] = useState<User | null>(null);
 
   async function LoginToMagicLink(passedEmail: string) {
     setIsLoading(true)
@@ -39,10 +42,14 @@ export default function AuthProvider({ children }: IChildren) {
         email: passedEmail,
       })
       setIsEmailSent(true)
-    } catch (err) {
-      console.error("this operation error", err)
+    } catch (err: any) {
+      console.error("Login Magic Link error:", err)
       setIsEmailSent(false)
-   
+      if (err.response && err.response.data && err.response.data.message) {
+        toast.error(err.response.data.message);
+      } else {
+        toast.error("An unexpected error occurred during login.");
+      }
       throw err
     } finally {
       setIsLoading(false)
@@ -58,11 +65,16 @@ export default function AuthProvider({ children }: IChildren) {
 
     try {
       const response = await instance.get("/user");
-      console.log(response.data.user)
       setUser(response.data.user);
-    } catch (error) {
+    } catch (error: any) {
+      Cookies.remove("@jwt")
       console.error("Failed to fetch user:", error);
-      setUser(null); 
+      setUser(null);
+      if (error.response && error.response.data && error.response.data.message) {
+        toast.error(`Failed to fetch user: ${error.response.data.message}`);
+      } else {
+        toast.error("Failed to fetch user data.");
+      }
     }
   };
 

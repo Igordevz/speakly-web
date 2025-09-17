@@ -1,5 +1,5 @@
 import DashboardHeader from "@/components/dashboard/dashboard-header";
-import SimpleAudioDashboard from "@/components/dashboard/simple-audio";
+import AudioDashboard from "@/components/dashboard/audio-dashboard";
 
 export default function DashboardPage() {
   return (
@@ -8,14 +8,14 @@ export default function DashboardPage() {
       <main className="container mx-auto px-4 py-6 max-w-7xl">
         <div className="space-y-8">
           <div className="text-center space-y-4 py-8">
-            <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Dashboard de Áudio
+            <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-blue-300 ">
+              Speakly - IA para áudio
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Transforme seus áudios em texto com inteligência artificial avançada
             </p>
           </div>
-          <SimpleAudioDashboard />
+          <AudioDashboard />
         </div>
       </main>
     </div>

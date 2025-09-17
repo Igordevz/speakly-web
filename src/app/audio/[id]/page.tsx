@@ -1,4 +1,4 @@
-import AudioDetail from "@/components/dashboard/audio-detail"
+import AudioDetailPage from "@/components/dashboard/audio-detail-page"
 
 interface AudioPageProps {
   params: {
@@ -7,5 +7,5 @@ interface AudioPageProps {
 }
 
 export default function AudioPage({ params }: AudioPageProps) {
-  return <AudioDetail audioId={params.id} />
+  return <AudioDetailPage audioId={params.id} />
 }
