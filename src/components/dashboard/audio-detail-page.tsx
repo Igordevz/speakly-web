@@ -13,7 +13,14 @@ import AudioChatAssistant from "./audio-chat-assistant";
 import AudioTranscriptionCard from "./audio-transcription-card";
 import AudioInfoCard from "./audio-info-card";
 import AudioActionsCard from "./audio-actions-card";
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 
@@ -72,7 +79,7 @@ export default function AudioDetailPage({ audioId }: AudioDetailProps) {
         setSidebarWidth(Math.max(200, Math.min(800, newWidth)));
       }
     },
-    [isResizing]
+    [isResizing],
   );
 
   useEffect(() => {
@@ -81,9 +88,9 @@ export default function AudioDetailPage({ audioId }: AudioDetailProps) {
     };
 
     checkScreenSize(); // Check on mount
-    window.addEventListener('resize', checkScreenSize); // Check on resize
+    window.addEventListener("resize", checkScreenSize); // Check on resize
 
-    return () => window.removeEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
   useEffect(() => {
@@ -100,7 +107,6 @@ export default function AudioDetailPage({ audioId }: AudioDetailProps) {
       setIsProcessing(true);
 
       const response = await instance.get(`/audio/process-uploaded/${audioId}`);
-
       const { audio } = response.data;
 
       setAudioData((prevData) => {
@@ -114,7 +120,8 @@ export default function AudioDetailPage({ audioId }: AudioDetailProps) {
 
       toast.success("Audio processed successfully!");
       setIsProcessed(true);
-    } catch {
+    } catch (err) {
+      console.log(err);
       toast.error("Error processing audio.");
     } finally {
       setIsProcessing(false);
@@ -176,7 +183,12 @@ export default function AudioDetailPage({ audioId }: AudioDetailProps) {
             />
 
             <div className="flex flex-col lg:flex-row">
-              <div className="flex-1" style={isLargeScreen ? { marginRight: sidebarWidth + 'px' } : {}}>
+              <div
+                className="flex-1"
+                style={
+                  isLargeScreen ? { marginRight: sidebarWidth + "px" } : {}
+                }
+              >
                 <div className="grid gap-8 lg:grid-cols-3">
                   <div className="lg:col-span-2 space-y-8">
                     <AudioSummaryCard summary={audioData.summary} />
@@ -201,7 +213,8 @@ export default function AudioDetailPage({ audioId }: AudioDetailProps) {
                         });
                         element.href = URL.createObjectURL(file);
                         element.download = `transcricao-${audioData.filename.replace(
-                          /\.[^/.]+$/, ""
+                          /\.[^/.]+$/,
+                          "",
                         )}.txt`;
                         document.body.appendChild(element);
                         element.click();
@@ -218,7 +231,7 @@ export default function AudioDetailPage({ audioId }: AudioDetailProps) {
               <div
                 ref={sidebarRef}
                 className="hidden lg:flex lg:fixed lg:right-0 lg:top-16 lg:bottom-0 lg:bg-card lg:border-l lg:border-border/50 lg:p-4 lg:shadow-lg lg:z-50 flex-col"
-                style={{ width: sidebarWidth + 'px' }}
+                style={{ width: sidebarWidth + "px" }}
               >
                 <div
                   className="absolute left-0 top-0 h-full w-2 cursor-ew-resize z-50"
@@ -235,7 +248,10 @@ export default function AudioDetailPage({ audioId }: AudioDetailProps) {
                       <Menu className="h-6 w-6" />
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="right" className="w-full sm:max-w-md flex flex-col h-full max-h-screen">
+                  <SheetContent
+                    side="right"
+                    className="w-full sm:max-w-md flex flex-col h-full max-h-screen"
+                  >
                     <SheetHeader>
                       <SheetTitle>Assistente de Áudio com IA</SheetTitle>
                       <SheetDescription>
