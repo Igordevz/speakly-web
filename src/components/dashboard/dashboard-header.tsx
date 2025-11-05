@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { LogOut, User } from "lucide-react"
+import { LogOut } from "lucide-react"
 import Cookies from "js-cookie"
 import logo from "../../../public/speakly.png"
 import Image from "next/image"

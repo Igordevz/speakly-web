@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useContext, useMemo } from "react";
 import axios from "axios";
-import { z } from "zod";
 import { instance as api } from "@/lib/axios";
 import { contextApi } from "@/context/auth";
 import { toast } from "sonner";

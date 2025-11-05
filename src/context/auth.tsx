@@ -42,11 +42,11 @@ export default function AuthProvider({ children }: IChildren) {
         email: passedEmail,
       })
       setIsEmailSent(true)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Login Magic Link error:", err)
       setIsEmailSent(false)
-      if (err.response && err.response.data && err.response.data.message) {
-        toast.error(err.response.data.message);
+      if (err instanceof Error) {
+        toast.error(err.message);
       } else {
         toast.error("An unexpected error occurred during login.");
       }
@@ -66,12 +66,12 @@ export default function AuthProvider({ children }: IChildren) {
     try {
       const response = await instance.get("/user");
       setUser(response.data.user);
-    } catch (error: any) {
+    } catch (error: unknown) {
       Cookies.remove("@jwt")
       console.error("Failed to fetch user:", error);
       setUser(null);
-      if (error.response && error.response.data && error.response.data.message) {
-        toast.error(`Failed to fetch user: ${error.response.data.message}`);
+      if (error instanceof Error) {
+        toast.error(`Failed to fetch user: ${error.message}`);
       } else {
         toast.error("Failed to fetch user data.");
       }

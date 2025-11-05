@@ -86,7 +86,7 @@ Question: ${chatInput}`;
           ),
         );
       }
-    } catch (error) {
+    } catch {
       const errorResponse: ChatMessage = {
         id: (Date.now() + 1).toString(),
         type: "ai",
@@ -103,56 +103,42 @@ Question: ${chatInput}`;
   return (
     <div className="border-none shadow-sm h-full flex flex-col bg-background">
       <ScrollArea className="w-full flex-1 border border-border/50 rounded-lg p-4 bg-card/50">
-        {chatMessages.length === 0 ? (
-          <div className="text-center text-muted-foreground py-12">
-            <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
-              <Bot className="h-8 w-8 text-primary" />
-            </div>
-            <p className="text-lg font-medium mb-2">
-              Faça uma pergunta sobre o áudio
-            </p>
-            <p className="text-sm">
-              Ex: &quot;No áudio fala algo sobre Igor?&quot;
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {chatMessages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${
-                  message.type === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
-                <div
-                  className={`flex items-start space-x-3 max-w-[85%] ${
-                    message.type === "user"
-                      ? "flex-row-reverse space-x-reverse"
-                      : ""
-                  }`}
-                >
-                  <div
-                    className={`p-2 rounded-full ${
-                      message.type === "user" ? "bg-primary" : "bg-muted"
-                    }`}
-                  >
-                    {message.type === "user" ? (
-                      <User className="h-4 w-4 text-primary-foreground" />
-                    ) : (
-                      <Bot className="h-4 w-4 text-muted-foreground" />
-                    )}
+                {chatMessages.length === 0 ? (
+                  <div className="flex h-full flex-col items-center justify-center rounded-lg border border-dashed bg-card/50 p-8 text-center">
+                    <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                      <Bot className="h-8 w-8 text-primary" />
+                    </div>
+                    <h2 className="text-xl font-semibold">Comece a conversar</h2>
+                    <p className="mt-2 text-muted-foreground">
+                      Você pode fazer perguntas sobre a transcrição e o resumo do seu
+                      áudio.
+                    </p>
                   </div>
-                  <div
-                    className={`p-4 rounded-xl ${
-                      message.type === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted/50 border border-border/50"
-                    }`}
-                  >
-                    <p className="text-sm leading-relaxed">{message.content}</p>
-                  </div>
-                </div>
-              </div>
+                ) : (
+                  <div className="space-y-6">
+                    {chatMessages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`flex items-start gap-4 ${message.type === "user" ? "justify-end" : ""}`}>
+                        {message.type === "ai" && (
+                          <div
+                            className={`flex h-8 w-8 items-center justify-center rounded-full bg-muted`}>
+                            <Bot className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div
+                          className={`max-w-[85%] rounded-xl p-4 shadow-sm ${message.type === "user"
+                              ? "bg-primary text-primary-foreground"
+                              : "border bg-muted/50"}`}>
+                          <p className="text-sm leading-relaxed">{message.content}</p>
+                        </div>
+                        {message.type === "user" && (
+                          <div
+                            className={`flex h-8 w-8 items-center justify-center rounded-full bg-primary`}>
+                            <User className="h-4 w-4 text-primary-foreground" />
+                          </div>
+                        )}
+                      </div>
             ))}
             {isAiTyping && (
               <div className="flex justify-start">
@@ -182,19 +168,20 @@ Question: ${chatInput}`;
           </div>
         )}
       </ScrollArea>
-      <div className="grid grid-cols-[1fr_auto] gap-3 py-2">
+      <div className="relative mt-4">
         <Input
           placeholder="Ex: No áudio fala algo sobre Igor?"
           value={chatInput}
           onChange={(e) => setChatInput(e.target.value)}
           onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
           disabled={isAiTyping}
-          className="w-full"
+          className="w-full rounded-full py-6 pl-6 pr-20 shadow-sm"
         />
         <Button
           onClick={handleSendMessage}
           disabled={!chatInput.trim() || isAiTyping}
-          size="default"
+          className="absolute inset-y-0 right-0 my-2 mr-2 flex h-10 w-10 items-center justify-center rounded-full"
+          size="icon"
         >
           <Send className="h-4 w-4" />
         </Button>

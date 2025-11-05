@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { instance } from "@/lib/axios";
 import AudioDetailLoadingState from "./audio-detail-loading-state";
@@ -50,7 +49,6 @@ interface AudioDetailProps {
 }
 
 export default function AudioDetailPage({ audioId }: AudioDetailProps) {
-  const router = useRouter();
   const [audioData, setAudioData] = useState<AudioData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -189,8 +187,8 @@ export default function AudioDetailPage({ audioId }: AudioDetailProps) {
                   isLargeScreen ? { marginRight: sidebarWidth + "px" } : {}
                 }
               >
-                <div className="grid gap-8 lg:grid-cols-3">
-                  <div className="lg:col-span-2 space-y-8">
+                <div className="grid gap-8 lg:grid-cols-5">
+                  <div className="lg:col-span-3 space-y-8">
                     <AudioSummaryCard summary={audioData.summary} />
                     <AudioTranscriptionCard
                       transcription={audioData.transcription}
