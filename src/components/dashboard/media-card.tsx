@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { FileAudio, Play, Trash2 } from "lucide-react";
 
-interface AudioFile {
+interface MediaFile {
   id: string;
   name: string;
   size: number;
@@ -14,13 +14,13 @@ interface AudioFile {
   error?: boolean;
 }
 
-interface AudioCardProps {
-  file: AudioFile;
-  removeFile: (id: string) => void;
+interface MediaCardProps {
+  file: MediaFile;
+  removeMedia: (id: string) => void;
   formatFileSize: (bytes: number) => string;
 }
 
-export default function AudioCard({ file, removeFile, formatFileSize }: AudioCardProps) {
+export default function MediaCard({ file, removeMedia, formatFileSize }: MediaCardProps) {
   return (
     <div
       key={file.id}
@@ -50,7 +50,7 @@ export default function AudioCard({ file, removeFile, formatFileSize }: AudioCar
       </div>
 
       <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 mt-4 sm:mt-0 flex-shrink-0">
-        <Link href={`/audio/${file.id}`} className="w-full sm:w-auto">
+        <Link href={`/media/${file.id}`} className="w-full sm:w-auto">
           <Button
             size="sm"
             variant="outline"
@@ -64,7 +64,7 @@ export default function AudioCard({ file, removeFile, formatFileSize }: AudioCar
         <Button
           size="sm"
           variant="ghost"
-          onClick={() => removeFile(file.id)}
+          onClick={() => removeMedia(file.id)}
           className="w-full sm:w-auto"
         >
           <Trash2 className="h-4 w-4" />

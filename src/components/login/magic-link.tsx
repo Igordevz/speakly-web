@@ -16,7 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Mail, ArrowLeft, CheckCircle } from "lucide-react";
+import { Mail, ArrowLeft, CheckCircle, MailSearchIcon } from "lucide-react";
 import { contextApi } from "@/context/auth";
 
 const MagicLinkSchema = z.object({
@@ -124,7 +124,7 @@ export default function MagicLinkLogin({ className }: MagicLinkLoginProps) {
       <Card className={`w-full max-w-md mx-auto ${className}`}>
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">
-            Entrar com Magic Link
+            Entrar com Email 
           </CardTitle>
           <CardDescription>
             Digite seu email e enviaremos um link para fazer login

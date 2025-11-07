@@ -3,11 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Sparkles, Copy, CheckCircle } from "lucide-react";
 
-interface AudioSummaryCardProps {
+interface MediaSummaryCardProps {
   summary: string;
 }
 
-export default function AudioSummaryCard({ summary }: AudioSummaryCardProps) {
+export default function MediaSummaryCard({ summary }: MediaSummaryCardProps) {
   const [copied, setCopied] = useState<boolean>(false);
 
   const copyToClipboard = async (text: string) => {

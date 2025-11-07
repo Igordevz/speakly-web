@@ -30,7 +30,7 @@ export default function TokenPage() {
 
         if (token) {
           Cookies.set("@jwt", token, { expires: 7 });
-          router.push("/")
+          location.replace("/")
           setIsTokenSet(true);
         } else {
           setError("Token não foi retornado pela API.");

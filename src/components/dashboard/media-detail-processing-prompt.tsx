@@ -3,15 +3,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FileAudio, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-interface AudioDetailProcessingPromptProps {
-  handleProcessAudio: () => Promise<void>;
+interface MediaDetailProcessingPromptProps {
+  handleProcessMedia: () => Promise<void>;
   isProcessing: boolean;
 }
 
-export default function AudioDetailProcessingPrompt({
-  handleProcessAudio,
+export default function MediaDetailProcessingPrompt({
+  handleProcessMedia,
   isProcessing,
-}: AudioDetailProcessingPromptProps) {
+}: MediaDetailProcessingPromptProps) {
   const router = useRouter();
 
   return (
@@ -19,16 +19,16 @@ export default function AudioDetailProcessingPrompt({
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <FileAudio className="mx-auto h-12 w-12 text-primary mb-4" />
-          <CardTitle className="text-2xl font-bold">Áudio ainda não foi processado</CardTitle>
-          <CardDescription>Este áudio ainda não foi processado. Clique no botão abaixo para iniciar o processamento.</CardDescription>
+          <CardTitle className="text-2xl font-bold">Mídia ainda não foi processada</CardTitle>
+          <CardDescription>Esta mídia ainda não foi processada. Clique no botão abaixo para iniciar o processamento.</CardDescription>
         </CardHeader>
         <CardContent className="text-center">
           <Button
-            onClick={handleProcessAudio}
+            onClick={handleProcessMedia}
             disabled={isProcessing}
             className="w-full cursor-pointer"
           >
-            {isProcessing ? 'Processando...' : 'Processar Áudio'}
+            {isProcessing ? 'Processando...' : 'Processar Mídia'}
           </Button>
           <Button
             variant="ghost"

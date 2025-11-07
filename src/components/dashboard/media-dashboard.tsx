@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback, useContext, useMemo } from "react";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { instance as api } from "@/lib/axios";
 import { contextApi } from "@/context/auth";
 import { toast } from "sonner";
-import AudioList from "./audio-list";
-import AudioUpload from "./audio-upload";
+import MediaList from "./media-list";
+import MediaUpload from "./media-upload";
 
-interface AudioFile {
+interface MediaFile {
   id: string;
   name: string;
   size: number;
@@ -17,9 +17,10 @@ interface AudioFile {
   transcribed: boolean;
   uploadedAt?: Date;
   error?: boolean;
+  fileType?: "audio" | "video";
 }
 
-interface ApiAudioFile {
+interface ApiMediaFile {
   id: string;
   name: string;
   file_size: number;
@@ -28,8 +29,8 @@ interface ApiAudioFile {
   createdAt: string | number | Date;
 }
 
-export default function AudioDashboard() {
-  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
+export default function MediaDashboard() {
+  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filter, setFilter] = useState<string>("all");
   const { user } = useContext(contextApi);
@@ -76,8 +77,8 @@ export default function AudioDashboard() {
     );
   };
 
-  const filteredAudioFiles = useMemo(() => {
-    let filtered = audioFiles;
+  const filteredMediaFiles = useMemo(() => {
+    let filtered = mediaFiles;
 
     if (searchTerm) {
       filtered = filtered.filter((file) =>
@@ -109,52 +110,59 @@ export default function AudioDashboard() {
     }
 
     return filtered;
-  }, [audioFiles, searchTerm, filter]);
+  }, [mediaFiles, searchTerm, filter]);
 
   useEffect(() => {
-    if (user?.Audio && Array.isArray(user.Audio)) {
-      const parsedFiles: AudioFile[] = user.Audio.map((file) => ({
-        id: (file as unknown as ApiAudioFile).id,
-        name: (file as unknown as ApiAudioFile).name ?? "sem_nome",
-        size: (file as unknown as ApiAudioFile).file_size ?? 0,
-        uploadProgress: 100,
-        isUploading: false,
-        transcribed:
-          Boolean((file as unknown as ApiAudioFile).text_brute) ||
-          Boolean((file as unknown as ApiAudioFile).resume),
-        uploadedAt: (file as unknown as ApiAudioFile).createdAt
-          ? new Date((file as unknown as ApiAudioFile).createdAt)
-          : undefined,
-      }));
-      setAudioFiles(parsedFiles);
+    if (user?.Media && Array.isArray(user.Media)) {
+      const parsedFiles: MediaFile[] = user.Media.map((file: ApiMediaFile) => {
+        const fileName = (file as unknown as ApiMediaFile).name ?? "sem_nome";
+        const fileType = fileName.match(/\.(mp4|webm|mov|avi|mkv)$/i) ? "video" : "audio";
+        return {
+          id: (file as unknown as ApiMediaFile).id,
+          name: fileName,
+          size: (file as unknown as ApiMediaFile).file_size ?? 0,
+          uploadProgress: 100,
+          isUploading: false,
+          transcribed:
+            Boolean((file as unknown as ApiMediaFile).text_brute) ||
+            Boolean((file as unknown as ApiMediaFile).resume),
+          uploadedAt: (file as unknown as ApiMediaFile).createdAt
+            ? new Date((file as unknown as ApiMediaFile).createdAt)
+            : undefined,
+          fileType: fileType,
+        };
+      });
+      setMediaFiles(parsedFiles);
     }
   }, [user]);
 
   // 🔹 Upload de novo arquivo
   const handleUpload = useCallback(async (file: File) => {
     const tempId = Math.random().toString(36).substring(2, 9);
-    const newFile: AudioFile = {
+    const fileType = file.type.startsWith("video/") ? "video" : "audio";
+    const newFile: MediaFile = {
       id: tempId,
       name: file.name,
       size: file.size,
       uploadProgress: 0,
       isUploading: true,
       transcribed: false,
+      fileType: fileType,
     };
 
-    setAudioFiles((prev) => [newFile, ...prev]);
+    setMediaFiles((prev) => [newFile, ...prev]);
 
     try {
-      const response = await api.post("/audio/upload-url", {
+      const response = await api.post("/media/upload-url", {
         name: file.name,
         contentType: file.type,
         fileSize: String(file.size),
       });
 
-      const { uploadUrl, audioId } = response.data;
+      const { uploadUrl, mediaId } = response.data;
 
-      setAudioFiles((prev) =>
-        prev.map((f) => (f.id === tempId ? { ...f, id: audioId } : f))
+      setMediaFiles((prev) =>
+        prev.map((f) => (f.id === tempId ? { ...f, id: mediaId } : f))
       );
 
       await axios.put(uploadUrl, file, {
@@ -163,17 +171,17 @@ export default function AudioDashboard() {
           const progress = Math.round(
             (progressEvent.loaded * 100) / (progressEvent.total ?? 1)
           );
-          setAudioFiles((prev) =>
+          setMediaFiles((prev) =>
             prev.map((f) =>
-              f.id === audioId ? { ...f, uploadProgress: progress } : f
+              f.id === mediaId ? { ...f, uploadProgress: progress } : f
             )
           );
         },
       });
 
-      setAudioFiles((prev) =>
+      setMediaFiles((prev) =>
         prev.map((f) =>
-          f.id === audioId
+          f.id === mediaId
             ? {
                 ...f,
                 isUploading: false,
@@ -185,7 +193,7 @@ export default function AudioDashboard() {
       toast.success("Upload completed successfully!");
     } catch (err) {
       console.error("Erro upload:", err);
-      setAudioFiles((prev) =>
+      setMediaFiles((prev) =>
         prev.map((f) =>
           f.id === tempId ? { ...f, isUploading: false, error: true } : f
         )
@@ -194,8 +202,71 @@ export default function AudioDashboard() {
     }
   }, []);
 
-  const removeFile = (id: string) => {
-    setAudioFiles((prev) => prev.filter((f) => f.id !== id));
+  const removeMedia = async (id: string) => {
+    try {
+      const response = await api.delete(`/media/delete/${id}`);
+      const data = response.data;
+
+      console.log('Response completa:', response);
+      console.log('Dados da API:', data);
+      
+      setMediaFiles((prev) => prev.filter((f) => f.id !== id));
+      
+      const message = data?.message || "Áudio excluído com sucesso!";
+      toast.success(message);
+    } catch (error: AxiosError) {
+      console.error("Erro ao excluir áudio:", error);
+      console.error("Detalhes do erro:", error.response?.data || error.message);
+      
+      const errorMessage = error.response?.data?.error || "Erro ao excluir áudio. Tente novamente.";
+      toast.error(errorMessage);
+    }
+  };
+
+  const processMedia = async (id: string) => {
+    try {
+      const response = await api.get(`/media/process-uploaded/${id}`);
+      const { media } = response.data;
+      
+      // Atualizar o estado do arquivo para processado
+      setMediaFiles((prev) =>
+        prev.map((f) =>
+          f.id === id
+            ? {
+                ...f,
+                transcribed: Boolean(media.text_brute || media.resume),
+              }
+            : f
+        )
+      );
+      
+      toast.success("Áudio processado com sucesso!");
+      
+      // Recarregar dados do usuário para obter os dados atualizados
+      if (user) {
+        const userResponse = await api.get("/user");
+        const updatedUser = userResponse.data.user;
+        if (updatedUser?.Media && Array.isArray(updatedUser.Media)) {
+          const parsedFiles: MediaFile[] = updatedUser.Media.map((file: ApiMediaFile) => ({
+            id: file.id,
+            name: file.name ?? "sem_nome",
+            size: file.file_size ?? 0,
+            uploadProgress: 100,
+            isUploading: false,
+            transcribed:
+              Boolean(file.text_brute) || Boolean(file.resume),
+            uploadedAt: file.createdAt
+              ? new Date(file.createdAt)
+              : undefined,
+          }));
+          setMediaFiles(parsedFiles);
+        }
+      }
+    } catch (error: AxiosError) {
+      console.error("Erro ao processar áudio:", error);
+      const errorMessage = error.response?.data?.error || "Erro ao processar áudio. Tente novamente.";
+      toast.error(errorMessage);
+    }
   };
 
   const formatFileSize = (bytes: number) => {
@@ -208,16 +279,17 @@ export default function AudioDashboard() {
 
   return (
     <div className="space-y-6">
-      <AudioList
-        filteredAudioFiles={filteredAudioFiles}
+      <MediaList
+        filteredMediaFiles={filteredMediaFiles}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         filter={filter}
         setFilter={setFilter}
-        removeFile={removeFile}
+        removeMedia={removeMedia}
+        processMedia={processMedia}
         formatFileSize={formatFileSize}
       />
-      <AudioUpload handleUpload={handleUpload} />
+      <MediaUpload handleUpload={handleUpload} />
     </div>
   );
 }

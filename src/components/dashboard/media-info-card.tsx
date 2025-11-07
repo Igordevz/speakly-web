@@ -3,14 +3,14 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { FileAudio } from "lucide-react";
 
-interface AudioInfoCardProps {
+interface MediaInfoCardProps {
   filename: string;
   duration: string;
   fileSize: string;
   uploadDate: string;
 }
 
-export default function AudioInfoCard({ filename, duration, fileSize, uploadDate }: AudioInfoCardProps) {
+export default function MediaInfoCard({ filename, duration, fileSize, uploadDate }: MediaInfoCardProps) {
   return (
     <Card className="border-border/50 shadow-sm">
       <CardHeader>
@@ -27,7 +27,7 @@ export default function AudioInfoCard({ filename, duration, fileSize, uploadDate
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{filename}</p>
-              <p className="text-xs text-muted-foreground">Arquivo de áudio</p>
+              <p className="text-xs text-muted-foreground">Arquivo de mídia</p>
             </div>
           </div>
         </div>

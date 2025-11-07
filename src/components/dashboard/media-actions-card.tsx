@@ -2,17 +2,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, FileAudio } from "lucide-react";
 
-interface AudioActionsCardProps {
+interface MediaActionsCardProps {
   downloadTranscription: () => void;
-  handleProcessAudio: () => Promise<void>;
+  handleProcessMedia: () => Promise<void>;
   isProcessing: boolean;
 }
 
-export default function AudioActionsCard({
+export default function MediaActionsCard({
   downloadTranscription,
-  handleProcessAudio,
+  handleProcessMedia,
   isProcessing,
-}: AudioActionsCardProps) {
+}: MediaActionsCardProps) {
   return (
     <Card className="border-border/50 shadow-sm">
       <CardHeader>
@@ -30,11 +30,11 @@ export default function AudioActionsCard({
         <Button
           variant="outline"
           className="w-full justify-start bg-transparent"
-          onClick={handleProcessAudio}
+          onClick={handleProcessMedia}
           disabled={isProcessing}
         >
           <FileAudio className="h-4 w-4 mr-2" />
-          {isProcessing ? 'Reprocessando...' : 'Reprocessar Áudio'}
+          {isProcessing ? 'Reprocessando...' : 'Reprocessar Mídia'}
         </Button>
       </CardContent>
     </Card>

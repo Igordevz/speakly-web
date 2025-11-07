@@ -4,12 +4,12 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, CheckCircle, Clock } from "lucide-react";
 
-interface AudioDetailHeaderProps {
+interface MediaDetailHeaderProps {
   filename: string;
   uploadDate: string;
 }
 
-export default function AudioDetailHeader({ filename, uploadDate }: AudioDetailHeaderProps) {
+export default function MediaDetailHeader({ filename, uploadDate }: MediaDetailHeaderProps) {
   const router = useRouter();
 
   return (
