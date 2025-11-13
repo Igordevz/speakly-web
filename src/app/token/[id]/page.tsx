@@ -1,108 +1,91 @@
-'use client'
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import Cookies from "js-cookie";
-import { instance } from "@/lib/axios";
-import { useRouter } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle, CheckCircle, Loader2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { instance } from "@/lib/axios";
+import { AlertTriangle, XCircle } from "lucide-react";
 
-export default function TokenPage() {
-  const params = useParams();
-  const id = params.id as string;
+interface TokenPageProps {
+  params: {
+    id: string;
+  };
+}
 
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isTokenSet, setIsTokenSet] = useState(false);
-  const router = useRouter();
-  useEffect(() => {
-    if (!id) {
-      return; 
+async function validateToken(id: string) {
+  try {
+    const response = await instance.get(`/token/${id}`);
+    const token = response?.data?.token;
+
+    if (token) {
+      cookies().set("@jwt", token, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+      });
+      return { success: true, error: null };
+    } else {
+      return { success: false, error: "Token inválido ou expirado." };
     }
+  } catch (err: unknown) {
+    const error = err as { response?: { data?: { message?: string } } };
+    return {
+      success: false,
+      error:
+        error?.response?.data?.message ||
+        "Não foi possível validar seu acesso.",
+    };
+  }
+}
 
-    async function validateToken() {
-      setIsLoading(true);
-      try {
-        const response = await instance.get(`/token/${id}`);
-        const token = response?.data?.token;
+export default async function TokenPage({ params }: TokenPageProps) {
+  const { id } = params;
 
-        if (token) {
-          Cookies.set("@jwt", token, { expires: 7 });
-          location.replace("/")
-          setIsTokenSet(true);
-        } else {
-          setError("Token não foi retornado pela API.");
-        }
-      } catch (err: unknown) {
-        const error = err as { response?: { data?: { message?: string } } };
-        setError(error?.response?.data?.message || "Ocorreu um erro ao validar o token.");
-      } finally {
-        setIsLoading(false);
-      }
-    }
+  if (!id) {
+    redirect("/login");
+  }
 
-    validateToken();
-  }, [id, router]);
+  const result = await validateToken(id);
+
+  if (result.success) {
+    redirect("/");
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center ">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">
-            {isLoading ? "Validando Token" : isTokenSet ? "Acesso Autorizado" : "Erro de Validação"}
-          </CardTitle>
-          <CardDescription>
-            {isLoading
-              ? "Verificando suas credenciais..."
-              : isTokenSet
-                ? "Redirecionando você para o sistema..."
-                : "Não foi possível validar seu token de acesso"}
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="text-center space-y-6">
-          {isLoading && (
-            <div className="flex flex-col items-center space-y-4">
-              <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
-              <p className="text-sm text-muted-foreground">Aguarde enquanto validamos seu token...</p>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 dark:bg-gray-950">
+      <div className="w-full max-w-md px-4">
+        <Card className="shadow-lg border-t-4 border-red-500">
+          <CardHeader className="text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+              <XCircle className="h-10 w-10 text-red-500" />
             </div>
-          )}
-
-          {isTokenSet && (
-            <div className="flex flex-col items-center space-y-4">
-              <CheckCircle className="h-12 w-12 text-green-600" />
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-green-700 dark:text-green-400">Token validado com sucesso!</p>
-                <p className="text-xs text-muted-foreground">Você será redirecionado automaticamente...</p>
-              </div>
+            <CardTitle className="mt-4 text-2xl font-bold">
+              Falha na Autenticação
+            </CardTitle>
+            <CardDescription className="mt-2 text-base text-muted-foreground">
+              {result.error}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center space-y-6">
+            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+              <AlertTriangle className="h-4 w-4" />
+              <span>Verifique se o link de acesso não expirou.</span>
             </div>
-          )}
-
-          {error && !isLoading && (
-            <div className="flex flex-col items-center space-y-4">
-              <XCircle className="h-12 w-12 text-red-600" />
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-red-700 dark:text-red-400">{error}</p>
-                <div className="flex items-center justify-center space-x-2 text-xs text-muted-foreground">
-                  <AlertTriangle className="h-3 w-3" />
-                  <span>Verifique se o link está correto ou solicite um novo</span>
-                </div>
-              </div>
-
-              <div className="flex space-x-2 pt-4">
-                <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
-                  Tentar Novamente
-                </Button>
-                <Button size="sm" onClick={() => router.push("/login")}>
-                  Voltar ao Login
-                </Button>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            <Button asChild className="w-full max-w-xs">
+              <Link href="/login">Voltar para o Login</Link>
+            </Button>
+          </CardContent>
+        </Card>
+        <footer className="mt-8 text-center text-xs text-muted-foreground">
+          <p>Se o problema persistir, entre em contato com o suporte.</p>
+        </footer>
+      </div>
     </div>
-  ) 
+  );
 }

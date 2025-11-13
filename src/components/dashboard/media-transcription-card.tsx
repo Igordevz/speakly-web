@@ -1,5 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, Copy, CheckCircle } from "lucide-react";
 
@@ -19,8 +25,11 @@ export default function MediaTranscriptionCard({
   mediaDuration,
   isPlaying = false,
   currentTime = 0,
-}: MediaTranscriptionCardProps) {  const [copied, setCopied] = useState<boolean>(false);
-  const [words, setWords] = useState<Array<{ word: string; startTime: number; endTime: number }>>([]);
+}: MediaTranscriptionCardProps) {
+  const [copied, setCopied] = useState<boolean>(false);
+  const [words, setWords] = useState<
+    Array<{ word: string; startTime: number; endTime: number }>
+  >([]);
   const [highlightedWordIndex, setHighlightedWordIndex] = useState(-1);
   const transcriptionRef = useRef<HTMLDivElement>(null);
 
@@ -48,8 +57,8 @@ export default function MediaTranscriptionCard({
   useEffect(() => {
     if (!transcription) return;
 
-    const wordArray = transcription.split(/\s+/).filter(w => w.length > 0);
-    
+    const wordArray = transcription.split(/\s+/).filter((w) => w.length > 0);
+
     if (wordArray.length === 0) return;
 
     const duration = mediaDuration || 0;
@@ -73,21 +82,21 @@ export default function MediaTranscriptionCard({
     }
 
     const currentWordIndex = words.findIndex(
-      (w) => currentTime >= w.startTime && currentTime < w.endTime
+      (w) => currentTime >= w.startTime && currentTime < w.endTime,
     );
-    
+
     if (currentWordIndex !== -1 && currentWordIndex !== highlightedWordIndex) {
       setHighlightedWordIndex(currentWordIndex);
-      
+
       // Scroll to highlighted word
       if (transcriptionRef.current) {
         const wordElement = transcriptionRef.current.querySelector(
-          `[data-word-index="${currentWordIndex}"]`
+          `[data-word-index="${currentWordIndex}"]`,
         );
         if (wordElement) {
           wordElement.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
+            behavior: "smooth",
+            block: "center",
           });
         }
       }
@@ -95,7 +104,7 @@ export default function MediaTranscriptionCard({
   }, [currentTime, isPlaying, words, highlightedWordIndex]);
 
   return (
-    <Card className="border-border/50 shadow-sm">
+    <Card className="border-border/50 shadow-sm flex flex-col flex-1">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div>
@@ -122,8 +131,8 @@ export default function MediaTranscriptionCard({
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="bg-muted/30 rounded-lg p-6 max-h-96 overflow-y-auto">
+      <CardContent className="flex-1">
+        <div className="bg-muted/30 rounded-lg p-6 h-full overflow-y-auto">
           {words.length > 0 && mediaUrl ? (
             <div
               ref={transcriptionRef}
@@ -132,22 +141,22 @@ export default function MediaTranscriptionCard({
               {words.map((wordData, index) => {
                 const isHighlighted = index === highlightedWordIndex;
                 const isPast = index < highlightedWordIndex;
-                
-                  return (
-                    <span
-                      key={index}
-                      data-word-index={index}
-                      className={`inline-block transition-all duration-200 mr-1 ${
-                        isHighlighted
-                          ? 'bg-primary/30 text-primary font-bold px-2 py-1 rounded-md scale-110 shadow-lg shadow-primary/20 z-10 relative'
-                          : isPast
-                          ? 'text-muted-foreground/50'
-                          : 'text-foreground'
-                      }`}
-                    >
-                      {wordData.word}
-                    </span>
-                  );
+
+                return (
+                  <span
+                    key={index}
+                    data-word-index={index}
+                    className={`inline-block transition-all duration-200 mr-1 ${
+                      isHighlighted
+                        ? "bg-primary/30 text-primary font-bold px-2 py-1 rounded-md scale-110 shadow-lg shadow-primary/20 z-10 relative"
+                        : isPast
+                          ? "text-muted-foreground/50"
+                          : "text-foreground"
+                    }`}
+                  >
+                    {wordData.word}
+                  </span>
+                );
               })}
             </div>
           ) : (

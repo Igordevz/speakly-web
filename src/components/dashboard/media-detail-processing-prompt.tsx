@@ -1,5 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { FileAudio, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -15,14 +21,14 @@ export default function MediaDetailProcessingPrompt({
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
+    <Dialog open={true} onOpenChange={() => {}}>
+      <DialogContent className="max-w-md">
+        <DialogHeader className="text-center">
           <FileAudio className="mx-auto h-12 w-12 text-primary mb-4" />
-          <CardTitle className="text-2xl font-bold">Mídia ainda não foi processada</CardTitle>
-          <CardDescription>Esta mídia ainda não foi processada. Clique no botão abaixo para iniciar o processamento.</CardDescription>
-        </CardHeader>
-        <CardContent className="text-center">
+          <DialogTitle className="text-2xl font-bold">Mídia ainda não foi processada</DialogTitle>
+          <DialogDescription>Esta mídia ainda não foi processada. Clique no botão abaixo para iniciar o processamento.</DialogDescription>
+        </DialogHeader>
+        <div className="text-center">
           <Button
             onClick={handleProcessMedia}
             disabled={isProcessing}
@@ -38,8 +44,8 @@ export default function MediaDetailProcessingPrompt({
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar ao Dashboard
           </Button>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

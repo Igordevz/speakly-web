@@ -13,6 +13,7 @@ import MediaChatAssistant from "./media-chat-assistant";
 import MediaTranscriptionCard from "./media-transcription-card";
 import MediaInfoCard from "./media-info-card";
 import MediaActionsCard from "./media-actions-card";
+import ModernMediaPlayer from "./modern-media-player"; // Import the new player
 
 import {
   Sheet,
@@ -24,8 +25,7 @@ import {
 } from "@/components/ui/sheet";
 
 import { Button } from "@/components/ui/button";
-import { Bot, Play, Pause, Minus, Plus, VolumeX, Volume1, Volume2, Download, Sun, Moon } from "lucide-react";
-import { useTheme } from "next-themes";
+import { Bot } from "lucide-react";
 
 interface ApiMedia {
   id: string;
@@ -57,63 +57,19 @@ interface MediaDetailProps {
 }
 
 export default function MediaDetailPage({ mediaId }: MediaDetailProps) {
-  const { theme, setTheme } = useTheme();
   const [mediaData, setMediaData] = useState<MediaData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isProcessed, setIsProcessed] = useState(true);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-
   const [isLargeScreen, setIsLargeScreen] = useState(false);
+
+  // State for transcription card interaction
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(1);
-  const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
 
-  const mediaRef = useRef<HTMLAudioElement | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-
-  // Play or pause
-  const toggleMedia = () => {
-    if (!mediaData?.audioUrl) return;
-
-    const element = mediaData.fileType === "video" ? videoRef.current : mediaRef.current;
-    if (!element) return;
-
-    if (isPlaying) {
-      element.pause();
-    } else {
-      element.play();
-    }
-    setIsPlaying(!isPlaying);
-  };
-
-  // Volume and Mute
-  const handleVolumeChange = (v: number) => {
-    setVolume(v);
-    setIsMuted(v === 0);
-
-    const element = mediaData?.fileType === "video" ? videoRef.current : mediaRef.current;
-    if (element) element.volume = v;
-  };
-
-  const toggleMute = () => handleVolumeChange(isMuted ? 1 : 0);
-  const increaseVolume = () => handleVolumeChange(Math.min(1, volume + 0.1));
-  const decreaseVolume = () => handleVolumeChange(Math.max(0, volume - 0.1));
-
-  const handleDownload = () => {
-    if (!mediaData?.audioUrl) return;
-    const ext = mediaData.fileType === "video" ? "mp4" : "m4a";
-    const link = document.createElement("a");
-    link.href = mediaData.audioUrl;
-    link.download = `${mediaData.filename}.${ext}`;
-    link.click();
-  };
-
-  const toggleTheme = () => setTheme((theme || "light") === "dark" ? "light" : "dark");
-
   // Sidebar Resize
-  const [sidebarWidth, setSidebarWidth] = useState(360);
+  const [sidebarWidth, setSidebarWidth] = useState(400);
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
 
@@ -124,9 +80,9 @@ export default function MediaDetailPage({ mediaId }: MediaDetailProps) {
     (e: MouseEvent) => {
       if (!isResizing) return;
       const newWidth = window.innerWidth - e.clientX;
-      setSidebarWidth(Math.max(240, Math.min(700, newWidth)));
+      setSidebarWidth(Math.max(240, Math.min(900, newWidth)));
     },
-    [isResizing]
+    [isResizing],
   );
 
   useEffect(() => {
@@ -161,14 +117,18 @@ export default function MediaDetailPage({ mediaId }: MediaDetailProps) {
           ? `${base}${encodeURI(media.reference.replace(/ /g, "%20"))}`
           : undefined;
 
-        const fileType = /\.(mp4|mov|webm|avi|mkv)$/i.test(media.name) ? "video" : "audio";
+        const fileType = /\.(mp4|mov|webm|avi|mkv)$/i.test(media.name)
+          ? "video"
+          : "audio";
 
         setMediaData({
           id: media.id,
           filename: media.name,
           duration: media.duration || "N/A",
           uploadDate: new Date(media.createdAt).toLocaleDateString(),
-          fileSize: media.file_size ? `${(media.file_size / 1024 / 1024).toFixed(2)} MB` : "N/A",
+          fileSize: media.file_size
+            ? `${(media.file_size / 1024 / 1024).toFixed(2)} MB`
+            : "N/A",
           status: "completed",
           transcription: media.text_brute || "",
           summary: media.resume || "",
@@ -191,7 +151,14 @@ export default function MediaDetailPage({ mediaId }: MediaDetailProps) {
       const res = await instance.get(`/media/process-uploaded/${mediaId}`);
       const media = res.data.media;
 
-      setMediaData((prev) => prev && { ...prev, transcription: media.text_brute, summary: media.resume });
+      setMediaData(
+        (prev) =>
+          prev && {
+            ...prev,
+            transcription: media.text_brute,
+            summary: media.resume,
+          },
+      );
       toast.success("Processado com sucesso!");
       setIsProcessed(true);
     } catch {
@@ -204,42 +171,39 @@ export default function MediaDetailPage({ mediaId }: MediaDetailProps) {
   // UI states
   if (loading) return <MediaDetailLoadingState />;
   if (!mediaData) return <MediaDetailNotFound />;
-  if (!isProcessed) return <MediaDetailProcessingPrompt isProcessing={isProcessing} handleProcessMedia={handleProcessMedia} />;
+  if (!isProcessed)
+    return (
+      <MediaDetailProcessingPrompt
+        isProcessing={isProcessing}
+        handleProcessMedia={handleProcessMedia}
+      />
+    );
 
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-10 max-w-[1920px]">
-        <MediaDetailHeader filename={mediaData.filename} uploadDate={mediaData.uploadDate} />
+        <MediaDetailHeader
+          filename={mediaData.filename}
+          uploadDate={mediaData.uploadDate}
+        />
 
         <div className="flex flex-col lg:flex-row gap-10">
           {/* MAIN CONTENT */}
-          <div className="flex-1 min-w-0" style={isLargeScreen ? { marginRight: sidebarWidth } : {}}>
+          <div
+            className="flex-1 min-w-0"
+            style={isLargeScreen ? { marginRight: sidebarWidth } : {}}
+          >
             <div className="grid gap-8 lg:grid-cols-5">
               {/* Left */}
-              <div className="lg:col-span-3 space-y-6">
-                
-                {/* Player */}
-                {mediaData.audioUrl && (
-                  <div className="p-4 rounded-xl border bg-card/50 backdrop-blur">
-                    {mediaData.fileType === "video" ? (
-                      <video ref={videoRef} src={mediaData.audioUrl} className="w-full rounded-xl" controls={false} />
-                    ) : (
-                      <audio ref={mediaRef} src={mediaData.audioUrl} className="hidden" />
-                    )}
-
-                    <div className="flex items-center gap-3 mt-3">
-                      <Button onClick={toggleMedia} size="icon">
-                        {isPlaying ? <Pause /> : <Play />}
-                      </Button>
-                      <Button onClick={toggleMute} size="icon">
-                        {isMuted || volume === 0 ? <VolumeX /> : volume < 0.5 ? <Volume1 /> : <Volume2 />}
-                      </Button>
-                      <Button onClick={decreaseVolume} size="icon" disabled={volume === 0}><Minus /></Button>
-                      <Button onClick={increaseVolume} size="icon" disabled={volume === 1}><Plus /></Button>
-                      <Button onClick={handleDownload} size="icon"><Download /></Button>
-                      <Button onClick={toggleTheme} size="icon">{(theme || "light") === "dark" ? <Sun /> : <Moon />}</Button>
-                    </div>
-                  </div>
+              <div className="lg:col-span-3 flex flex-col space-y-6">
+                {/* Modern Player */}
+                {mediaData.audioUrl && mediaData.fileType && (
+                  <ModernMediaPlayer
+                    src={mediaData.audioUrl}
+                    type={mediaData.fileType}
+                    onTimeUpdate={setCurrentTime}
+                    onPlayStateChange={setIsPlaying}
+                  />
                 )}
 
                 <MediaSummaryCard summary={mediaData.summary} />
@@ -256,23 +220,38 @@ export default function MediaDetailPage({ mediaId }: MediaDetailProps) {
               {/* Right */}
               <div className="lg:col-span-2 space-y-6">
                 <MediaInfoCard {...mediaData} />
-                <MediaActionsCard downloadTranscription={() => {
-                  const file = new Blob([mediaData.transcription], { type: "text/plain" });
-                  const link = document.createElement("a");
-                  link.href = URL.createObjectURL(file);
-                  link.download = `transcricao-${mediaData.filename}.txt`;
-                  link.click();
-                }} handleProcessMedia={handleProcessMedia} isProcessing={isProcessing} />
+                <MediaActionsCard
+                  downloadTranscription={() => {
+                    const file = new Blob([mediaData.transcription], {
+                      type: "text/plain",
+                    });
+                    const link = document.createElement("a");
+                    link.href = URL.createObjectURL(file);
+                    link.download = `transcricao-${mediaData.filename}.txt`;
+                    link.click();
+                  }}
+                  handleProcessMedia={handleProcessMedia}
+                  isProcessing={isProcessing}
+                />
               </div>
             </div>
           </div>
 
           {/* SIDEBAR (Desktop) */}
           {isLargeScreen && (
-            <div ref={sidebarRef} className="fixed top-0 right-0 bottom-0 border-l bg-background/90 backdrop-blur-xl shadow-xl"
-              style={{ width: sidebarWidth }}>
-              <div className="absolute left-0 w-1 h-full cursor-ew-resize" onMouseDown={startResizing} />
-              <MediaChatAssistant mediaData={mediaData} mediaUrl={mediaData.audioUrl} />
+            <div
+              ref={sidebarRef}
+              className="fixed top-0 right-0 bottom-0 border-l bg-background/90 backdrop-blur-xl shadow-xl"
+              style={{ width: sidebarWidth }}
+            >
+              <div
+                className="absolute left-0 w-1 h-full cursor-ew-resize"
+                onMouseDown={startResizing}
+              />
+              <MediaChatAssistant
+                mediaData={mediaData}
+                mediaUrl={mediaData.audioUrl}
+              />
             </div>
           )}
         </div>
@@ -281,15 +260,22 @@ export default function MediaDetailPage({ mediaId }: MediaDetailProps) {
         <div className="lg:hidden fixed bottom-6 right-6">
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
-              <Button size="icon" className="h-14 w-14 rounded-full shadow-xl"><Bot /></Button>
+              <Button size="icon" className="h-14 w-14 rounded-full shadow-xl">
+                <Bot />
+              </Button>
             </SheetTrigger>
             <SheetContent side="right" className="max-w-md">
               <SheetHeader>
                 <SheetTitle>Assistente IA</SheetTitle>
-                <SheetDescription>Pergunte sobre o conteúdo da mídia</SheetDescription>
+                <SheetDescription>
+                  Pergunte sobre o conteúdo da mídia
+                </SheetDescription>
               </SheetHeader>
               <div className="p-4">
-                <MediaChatAssistant mediaData={mediaData} mediaUrl={mediaData.audioUrl} />
+                <MediaChatAssistant
+                  mediaData={mediaData}
+                  mediaUrl={mediaData.audioUrl}
+                />
               </div>
             </SheetContent>
           </Sheet>
