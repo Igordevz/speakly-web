@@ -7,6 +7,7 @@ import { contextApi } from "@/context/auth";
 import { toast } from "sonner";
 import MediaList from "./media-list";
 import MediaUpload from "./media-upload";
+import YouTubeTranscribe from "./youtube-transcribe";
 
 interface MediaFile {
   id: string;
@@ -64,7 +65,8 @@ export default function MediaDashboard() {
   const isThisMonth = (date: Date) => {
     const now = new Date();
     return (
-      date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()
+      date.getMonth() === now.getMonth() &&
+      date.getFullYear() === now.getFullYear()
     );
   };
 
@@ -82,7 +84,7 @@ export default function MediaDashboard() {
 
     if (searchTerm) {
       filtered = filtered.filter((file) =>
-        file.name.toLowerCase().includes(searchTerm.toLowerCase())
+        file.name.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
 
@@ -116,7 +118,9 @@ export default function MediaDashboard() {
     if (user?.Media && Array.isArray(user.Media)) {
       const parsedFiles: MediaFile[] = user.Media.map((file: ApiMediaFile) => {
         const fileName = (file as unknown as ApiMediaFile).name ?? "sem_nome";
-        const fileType = fileName.match(/\.(mp4|webm|mov|avi|mkv)$/i) ? "video" : "audio";
+        const fileType = fileName.match(/\.(mp4|webm|mov|avi|mkv)$/i)
+          ? "video"
+          : "audio";
         return {
           id: (file as unknown as ApiMediaFile).id,
           name: fileName,
@@ -162,19 +166,19 @@ export default function MediaDashboard() {
       const { uploadUrl, mediaId } = response.data;
 
       setMediaFiles((prev) =>
-        prev.map((f) => (f.id === tempId ? { ...f, id: mediaId } : f))
+        prev.map((f) => (f.id === tempId ? { ...f, id: mediaId } : f)),
       );
 
       await axios.put(uploadUrl, file, {
         headers: { "Content-Type": file.type },
         onUploadProgress: (progressEvent) => {
           const progress = Math.round(
-            (progressEvent.loaded * 100) / (progressEvent.total ?? 1)
+            (progressEvent.loaded * 100) / (progressEvent.total ?? 1),
           );
           setMediaFiles((prev) =>
             prev.map((f) =>
-              f.id === mediaId ? { ...f, uploadProgress: progress } : f
-            )
+              f.id === mediaId ? { ...f, uploadProgress: progress } : f,
+            ),
           );
         },
       });
@@ -187,16 +191,16 @@ export default function MediaDashboard() {
                 isUploading: false,
                 uploadedAt: new Date(),
               }
-            : f
-        )
+            : f,
+        ),
       );
       toast.success("Upload completed successfully!");
     } catch (err) {
       console.error("Erro upload:", err);
       setMediaFiles((prev) =>
         prev.map((f) =>
-          f.id === tempId ? { ...f, isUploading: false, error: true } : f
-        )
+          f.id === tempId ? { ...f, isUploading: false, error: true } : f,
+        ),
       );
       toast.error("Error uploading file.");
     }
@@ -207,18 +211,20 @@ export default function MediaDashboard() {
       const response = await api.delete(`/media/delete/${id}`);
       const data = response.data;
 
-      console.log('Response completa:', response);
-      console.log('Dados da API:', data);
-      
+      console.log("Response completa:", response);
+      console.log("Dados da API:", data);
+
       setMediaFiles((prev) => prev.filter((f) => f.id !== id));
-      
+
       const message = data?.message || "Áudio excluído com sucesso!";
       toast.success(message);
     } catch (error: AxiosError) {
       console.error("Erro ao excluir áudio:", error);
       console.error("Detalhes do erro:", error.response?.data || error.message);
-      
-      const errorMessage = error.response?.data?.error || "Erro ao excluir áudio. Tente novamente.";
+
+      const errorMessage =
+        error.response?.data?.error ||
+        "Erro ao excluir áudio. Tente novamente.";
       toast.error(errorMessage);
     }
   };
@@ -227,7 +233,7 @@ export default function MediaDashboard() {
     try {
       const response = await api.get(`/media/process-uploaded/${id}`);
       const { media } = response.data;
-      
+
       // Atualizar o estado do arquivo para processado
       setMediaFiles((prev) =>
         prev.map((f) =>
@@ -236,35 +242,36 @@ export default function MediaDashboard() {
                 ...f,
                 transcribed: Boolean(media.text_brute || media.resume),
               }
-            : f
-        )
+            : f,
+        ),
       );
-      
+
       toast.success("Áudio processado com sucesso!");
-      
+
       // Recarregar dados do usuário para obter os dados atualizados
       if (user) {
         const userResponse = await api.get("/user");
         const updatedUser = userResponse.data.user;
         if (updatedUser?.Media && Array.isArray(updatedUser.Media)) {
-          const parsedFiles: MediaFile[] = updatedUser.Media.map((file: ApiMediaFile) => ({
-            id: file.id,
-            name: file.name ?? "sem_nome",
-            size: file.file_size ?? 0,
-            uploadProgress: 100,
-            isUploading: false,
-            transcribed:
-              Boolean(file.text_brute) || Boolean(file.resume),
-            uploadedAt: file.createdAt
-              ? new Date(file.createdAt)
-              : undefined,
-          }));
+          const parsedFiles: MediaFile[] = updatedUser.Media.map(
+            (file: ApiMediaFile) => ({
+              id: file.id,
+              name: file.name ?? "sem_nome",
+              size: file.file_size ?? 0,
+              uploadProgress: 100,
+              isUploading: false,
+              transcribed: Boolean(file.text_brute) || Boolean(file.resume),
+              uploadedAt: file.createdAt ? new Date(file.createdAt) : undefined,
+            }),
+          );
           setMediaFiles(parsedFiles);
         }
       }
     } catch (error: AxiosError) {
       console.error("Erro ao processar áudio:", error);
-      const errorMessage = error.response?.data?.error || "Erro ao processar áudio. Tente novamente.";
+      const errorMessage =
+        error.response?.data?.error ||
+        "Erro ao processar áudio. Tente novamente.";
       toast.error(errorMessage);
     }
   };
@@ -289,7 +296,9 @@ export default function MediaDashboard() {
         processMedia={processMedia}
         formatFileSize={formatFileSize}
       />
-      <MediaUpload handleUpload={handleUpload} />
+      <div className="grid grid-cols-1 gap-6">
+        <MediaUpload handleUpload={handleUpload} />
+      </div>
     </div>
   );
 }
