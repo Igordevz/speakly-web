@@ -2,7 +2,7 @@
 
 import DashboardHeader from "@/components/dashboard/dashboard-header";
 import { useContext } from "react";
-import { contextApi } from "@/context/auth";
+import { contextApi, ApiMediaFile } from "@/context/auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Clock, FileAudio, Sparkles } from "lucide-react";
 import { useMemo } from "react";

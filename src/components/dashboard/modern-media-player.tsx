@@ -100,7 +100,7 @@ export default function ModernMediaPlayer({
       media.removeEventListener("pause", handlePause);
       media.removeEventListener("ended", handlePause);
     };
-  }, [onTimeUpdate]);
+  }, [onTimeUpdate, onPlayStateChange]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {

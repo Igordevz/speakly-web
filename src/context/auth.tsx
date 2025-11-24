@@ -5,11 +5,20 @@ import React, { createContext, useState, ReactNode, useEffect } from "react";
 import Cookies from "js-cookie";
 import { toast } from "sonner";
 
+export interface ApiMediaFile {
+  id: string;
+  name: string;
+  file_size: number;
+  text_brute: string;
+  resume: string;
+  createdAt: string | number | Date;
+}
+
 interface User {
   id: string;
   name: string;
   email: string;
-  Audio: Record<string, unknown>[];
+  Media: ApiMediaFile[];
 }
 
 interface AuthContextProps {

@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback, useContext, useMemo } from "react";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
+
 import { instance as api } from "@/lib/axios";
-import { contextApi } from "@/context/auth";
+import { contextApi, ApiMediaFile } from "@/context/auth";
 import { toast } from "sonner";
 import MediaList from "./media-list";
 import MediaUpload from "./media-upload";
-import YouTubeTranscribe from "./youtube-transcribe";
+
 
 interface MediaFile {
   id: string;
@@ -21,14 +22,7 @@ interface MediaFile {
   fileType?: "audio" | "video";
 }
 
-interface ApiMediaFile {
-  id: string;
-  name: string;
-  file_size: number;
-  text_brute: string;
-  resume: string;
-  createdAt: string | number | Date;
-}
+
 
 export default function MediaDashboard() {
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
@@ -218,13 +212,14 @@ export default function MediaDashboard() {
 
       const message = data?.message || "Áudio excluído com sucesso!";
       toast.success(message);
-    } catch (error: AxiosError) {
+    } catch (error: unknown) {
       console.error("Erro ao excluir áudio:", error);
-      console.error("Detalhes do erro:", error.response?.data || error.message);
-
-      const errorMessage =
-        error.response?.data?.error ||
-        "Erro ao excluir áudio. Tente novamente.";
+      let errorMessage = "Erro ao excluir áudio. Tente novamente.";
+      if (axios.isAxiosError(error) && error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
       toast.error(errorMessage);
     }
   };
@@ -267,11 +262,14 @@ export default function MediaDashboard() {
           setMediaFiles(parsedFiles);
         }
       }
-    } catch (error: AxiosError) {
+    } catch (error: unknown) {
       console.error("Erro ao processar áudio:", error);
-      const errorMessage =
-        error.response?.data?.error ||
-        "Erro ao processar áudio. Tente novamente.";
+      let errorMessage = "Erro ao processar áudio. Tente novamente.";
+      if (axios.isAxiosError(error) && error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
       toast.error(errorMessage);
     }
   };

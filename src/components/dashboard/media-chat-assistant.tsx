@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -27,6 +27,7 @@ interface MediaChatAssistantProps {
     transcription?: string;
     summary?: string;
   };
+  mediaUrl?: string;
 }
 
 // Helper component for the copy button
@@ -108,12 +109,12 @@ const AIMessage = ({
           <li className="ml-4 text-foreground">{children}</li>
         ),
         pre: ({ children, ...props }) => {
-          const codeText =
-            children &&
-            typeof children[0] === "object" &&
-            "props" in children[0]
-              ? (children[0].props as any).children
-              : "";
+          const childArray = React.Children.toArray(children);
+          const firstChild = childArray.length > 0 ? childArray[0] : null;
+          let codeText = "";
+          if (firstChild && React.isValidElement(firstChild)) {
+            codeText = String((firstChild.props as { children: React.ReactNode }).children);
+          }
           return (
             <div className="relative">
               <pre
